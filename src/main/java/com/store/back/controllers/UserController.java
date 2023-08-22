@@ -1,10 +1,8 @@
 package com.store.back.controllers;
 
-import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -14,71 +12,44 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import com.store.back.models.entity.User;
 
-import exception.UserNotFoundException;
+import com.store.back.models.entity.User;
+import com.store.back.models.service.IUserService;
+
 
 @RestController
 @RequestMapping("/api/users")
 public class UserController {
 	
-	private List<User> users = new ArrayList<User>();
+	@Autowired
+    private IUserService userService;
 
     @PostMapping("/register")
-    public ResponseEntity<User> registerUser(@RequestBody User user) {
-        users.add(user);
-        return ResponseEntity.status(HttpStatus.CREATED).body(user);
+    public User registerUser(@RequestBody User user) {
+        return userService.registerUser(user);
     }
 
     @PutMapping("/update/{id}")
-    public ResponseEntity<User> updateUser(@PathVariable Long id, @RequestBody User user) {
-        User existingUser = findUserById(id);
-
-        if (existingUser == null) {
-            throw new UserNotFoundException("User not found with ID: " + id);
-        }
-
-        existingUser.setUsername(user.getUsername());
-        existingUser.setPassword(user.getPassword());
-
-        return ResponseEntity.ok(existingUser);
+    public User updateUser(@PathVariable Long id, @RequestBody User user) {
+        return userService.updateUser(id, user);
     }
 
     @DeleteMapping("/delete/{id}")
-    public ResponseEntity<Void> deleteUser(@PathVariable Long id) {
-        User user = findUserById(id);
-
-        if (user == null) {
-            throw new UserNotFoundException("User not found with ID: " + id);
-        }
-
-        users.remove(user);
-        return ResponseEntity.noContent().build();
+    public void deleteUser(@PathVariable Long id) {
+        userService.deleteUser(id);
     }
 
-    @GetMapping("/find")
-    public ResponseEntity<User> findUser(@RequestParam String username, @RequestParam String password) {
-        User user = users.stream()
-                .filter(u -> u.getUsername().equals(username) && u.getPassword().equals(password))
-                .findFirst()
-                .orElse(null);
-
-        if (user == null) {
-            throw new UserNotFoundException("User not found with provided credentials.");
-        }
-
-        return ResponseEntity.ok(user);
+    @GetMapping("/login")
+    public User findUserByUsernameAndPassword(@RequestParam String username, @RequestParam String password) {
+        return userService.findUserByUsernameAndPassword(username, password);
     }
 
     @GetMapping("/all")
-    public ResponseEntity<List<User>> getAllUsers() {
-        return ResponseEntity.ok(users);
+    public List<User> getAllUsers() {
+        return userService.getAllUsers();
     }
+    
+    
 
-    private User findUserById(Long id) {
-        return users.stream()
-                .filter(user -> user.getUserId().equals(id))
-                .findFirst()
-                .orElse(null);
-    }
+    
 }
