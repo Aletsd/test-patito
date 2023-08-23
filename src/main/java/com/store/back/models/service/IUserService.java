@@ -10,4 +10,7 @@ public interface IUserService {
     void deleteUser(Long id);
     User findUserByUsernameAndPassword(String username, String password);
     List<User> getAllUsers();
+    boolean isUserExists(String username);
+   
+        
 }

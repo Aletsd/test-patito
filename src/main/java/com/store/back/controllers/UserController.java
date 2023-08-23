@@ -3,6 +3,8 @@ package com.store.back.controllers;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,6 +28,8 @@ public class UserController {
 
     @PostMapping("/register")
     public User registerUser(@RequestBody User user) {
+    	String password = user.getPassword();
+    	System.out.println(password);
         return userService.registerUser(user);
     }
 
@@ -40,8 +44,14 @@ public class UserController {
     }
 
     @GetMapping("/login")
-    public User findUserByUsernameAndPassword(@RequestParam String username, @RequestParam String password) {
-        return userService.findUserByUsernameAndPassword(username, password);
+    public ResponseEntity<?> findUserByUsernameAndPassword(@RequestParam String username, @RequestParam String password) {
+        //return userService.findUserByUsernameAndPassword(username, password);
+    	User user = userService.findUserByUsernameAndPassword(username, password);
+        if (user != null) {
+            return ResponseEntity.ok(user);
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+        }
     }
 
     @GetMapping("/all")

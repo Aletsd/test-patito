@@ -3,6 +3,7 @@ import java.sql.Date;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import jakarta.persistence.*;
 
@@ -17,7 +18,7 @@ public class User {
     @Column(name = "username", unique = true)
     private String username;
 
-    @JsonIgnore
+    @JsonProperty("password")
     @Column(name = "password")
     private String password;
     

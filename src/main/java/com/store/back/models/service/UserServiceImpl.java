@@ -1,10 +1,14 @@
 package com.store.back.models.service;
 
 import com.store.back.models.entity.User;
+import com.store.back.models.repository.UserRepository;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.factory.PasswordEncoderFactories;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 
@@ -13,12 +17,36 @@ import org.springframework.stereotype.Service;
 public class UserServiceImpl implements IUserService {
 
 	private List<User> users = new ArrayList<>();
-    private Long nextId = 1L;
+	//private Long nextId = 1L;
+
+    
+    private UserRepository userRepository;
+    private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    public UserServiceImpl(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
+    
+   
 
     @Override
+    public boolean isUserExists(String username) {
+        return userRepository.existsByUsername(username);
+    }
+
+    
+    @Override
     public User registerUser(User user) {
-        user.setUserId(nextId++);
-        users.add(user);
+    	
+        if (userRepository.existsByUsername(user.getUsername())) {
+            throw new RuntimeException("Username already exists"); // O manejo más adecuado para manejar el error
+        }
+        PasswordEncoder encoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
+        String encodedPassword = encoder.encode(user.getPassword());
+        user.setPassword(encodedPassword); // Asigna la contraseña encriptada al objeto User
+
+        userRepository.save(user);
         return user;
     }
 
@@ -44,6 +72,8 @@ public class UserServiceImpl implements IUserService {
 
     @Override
     public User findUserByUsernameAndPassword(String username, String password) {
+    	PasswordEncoder encoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
+        password = encoder.encode(password);
         for (User user : users) {
             if (user.getUsername().equals(username) && user.getPassword().equals(password)) {
                 return user;
