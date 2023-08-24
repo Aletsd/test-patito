@@ -45,7 +45,7 @@ public class UserServiceImpl implements IUserService {
         PasswordEncoder encoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
         String encodedPassword = encoder.encode(user.getPassword());
         user.setPassword(encodedPassword); // Asigna la contraseña encriptada al objeto User
-
+        
         userRepository.save(user);
         return user;
     }
@@ -71,15 +71,15 @@ public class UserServiceImpl implements IUserService {
     }
 
     @Override
-    public User findUserByUsernameAndPassword(String username, String password) {
+    public User findUserByUsernameAndPassword(String username, String password) {    	
     	PasswordEncoder encoder = PasswordEncoderFactories.createDelegatingPasswordEncoder();
-        password = encoder.encode(password);
-        for (User user : users) {
-            if (user.getUsername().equals(username) && user.getPassword().equals(password)) {
-                return user;
-            }
+        User user = userRepository.findByUsername(username);
+        boolean passwordsMatch = encoder.matches(password, user.getPassword());
+        if(passwordsMatch) {
+        	return user;
+        } else {
+        	return null;
         }
-        return null;
     }
 
     @Override
